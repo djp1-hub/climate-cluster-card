@@ -8090,6 +8090,10 @@ ${FACE.KEYFRAMES}
       if (!ents.length) throw new Error("Define at least one climate entity in `entities`");
       this._config = Object.assign({}, config);
       this._zones = ents;
+      // Read-only sensors are rendered as separate tiles, never as climate zones.
+      this._displaySensors = (Array.isArray(config.display_sensors) ? config.display_sensors : [])
+        .map((e) => typeof e === "string" ? { entity: e } : e)
+        .filter((e) => e && typeof e.entity === "string" && e.entity.startsWith("sensor."));
       this._focus = null;
       this._sig = null;
 
@@ -8148,6 +8152,12 @@ ${FACE.KEYFRAMES}
         const state = this._hass.states[id];
         parts.push("external:" + id + ":" + (state ? state.state + ":" +
           ((state.attributes || {}).hvac_action || "") : "missing"));
+      }
+      for (const sensor of (this._displaySensors || [])) {
+        const st = this._hass.states[sensor.entity];
+        parts.push("display:" + sensor.entity + ":" + (st ? st.state + ":" +
+          ((st.attributes || {}).unit_of_measurement || "") + ":" +
+          (sensor.name || (st.attributes || {}).friendly_name || "") : "missing"));
       }
       for (const z of this._zones) {
         const s = this._hass.states[z.entity];
@@ -8827,6 +8837,35 @@ ${FACE.KEYFRAMES}
         .replace(/aria-label="raise"/g, 'aria-label="Повысить температуру"');
     }
 
+    // Temperature-only tile: never delegates to ZONE.tile, so it has no climate
+    // controls, no data-zone event target and no participation in ZONE.derive().
+    _displaySensorTile(sensor) {
+      const st = this._st(sensor.entity);
+      const attrs = (st && st.attributes) || {};
+      const label = escapeText(sensor.name || attrs.friendly_name || sensor.entity);
+      const raw = st && !["unknown", "unavailable"].includes(st.state) ? Number(st.state) : NaN;
+      const measured = Number.isFinite(raw) ? this._toDisplay(raw) : null;
+      const value = measured == null ? "—" : (Math.round(measured * 10) / 10).toFixed(1);
+      const unit = measured == null ? "" : "°";
+      const desc = langOf(this._hass) === "ru" ? "ТОЛЬКО ДАТЧИК" : "SENSOR ONLY";
+      return '<div class="cg-sensor-tile" title="' + escapeAttr(sensor.entity) +
+        '" style="border:1px solid rgba(154,175,210,.26);border-radius:13px;' +
+        'background:linear-gradient(158deg,rgba(154,175,210,.10),rgba(255,255,255,.025));' +
+        'padding:9px 9px 8px;display:flex;flex-direction:column;align-items:center;' +
+        'justify-content:space-between;gap:5px;min-width:0;min-height:125px;">' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;">' +
+        '<span style="width:7px;height:7px;border-radius:50%;background:#9aa5b1;opacity:.65;"></span>' +
+        '<span class="cg-tilename" style="font:600 14px/1 Rajdhani,sans-serif;' +
+        'letter-spacing:.14em;text-transform:uppercase;color:var(--primary-text-color,#f2f5f8);' +
+        'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + label + '</span></div>' +
+        '<div style="font:400 34px/.82 Rajdhani,sans-serif;color:var(--primary-text-color,#f6f8fa);">' +
+        value + '<span style="font-size:14px;color:var(--secondary-text-color,#8b95a2);">' +
+        unit + '</span></div>' +
+        '<div style="width:100%;height:4px;border-radius:5px;background:rgba(225,231,237,.10);"></div>' +
+        '<div style="font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.06em;' +
+        'color:var(--secondary-text-color,#9aa5b1);">' + desc + '</div></div>';
+    }
+
     _renderZoneCard() {
       const model = this._zoneModel();
       const d = ZONE.derive(model);
@@ -8838,7 +8877,8 @@ ${FACE.KEYFRAMES}
          is the shipped card's own idiom: it gives one row when the row fits and wraps
          when it does not. zone_rows still overrides it, because it is a shipped key
          and someone asked for that shape on purpose. */
-      const forced = this._gridStyle("zone_rows", model.zones.length);
+      const tileCount = model.zones.length + (this._displaySensors || []).length;
+      const forced = this._gridStyle("zone_rows", tileCount);
       const cols = forced
         ? forced.replace(/^ style="/, "").replace(/"$/, "")
         /* min(126px, 100%) rather than a flat 126px: an explicitly forced horizontal
@@ -8872,7 +8912,9 @@ ${FACE.KEYFRAMES}
         + ' margin-top:10px;">' + ZONE.hero(model, d)
         + '<div class="cg-zonecard-tiles" style="display:grid; ' + cols + '; gap:10px;'
         + ' align-self:center; min-height:' + ZONE.arcRatio() + ';">'
-        + model.zones.map((z, i) => ZONE.tile(z, i, d)).join("") + "</div></div>";
+        + model.zones.map((z, i) => ZONE.tile(z, i, d)).join("")
+        + (this._displaySensors || []).map((sensor) => this._displaySensorTile(sensor)).join("")
+        + "</div></div>";
 
       if (this._config.group_actions !== false) {
         html += this._zoneFooter(this._zoneActions(model, d, ui));
