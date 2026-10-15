@@ -26,7 +26,7 @@
   const NS = "http://www.w3.org/2000/svg";
 
   // ---- console version banner ---------------------------------------------
-  const VERSION = "2.3.1";
+  const VERSION = "2.3.2-ru.1";
   console.info(
     "%c CLIMATE-CLUSTER-CARD %c v" + VERSION + " ",
     "color:#0b0f16;background:#4fc3f7;font-weight:700;border-radius:4px 0 0 4px;padding:2px 6px",
@@ -8749,6 +8749,12 @@ ${FACE.KEYFRAMES}
         .replace(/>AVG ROOM<\/text>/g, ">СР. ТЕМП.<\/text>")
         .replace(/>TARGET<\/text>/g, ">УСТАВКА<\/text>")
         .replace(/>SPREAD /g, ">РАЗБРОС ")
+        // Legacy group labels may be rendered before the group dictionary is applied.
+        .replace(/(>\s*\d+\s+)COOLING(?=<\/span>)/g, "$1ОХЛАЖДЕНИЕ")
+        .replace(/>ALL OFF<\/button>/g, ">ВЫКЛЮЧИТЬ ВСЁ</button>")
+        .replace(/>SYNC ALL<\/button>/g, ">СИНХРОНИЗИРОВАТЬ</button>")
+        .replace(/>ALL ON<\/button>/g, ">ВКЛЮЧИТЬ ВСЁ</button>")
+        .replace(/>TAP TO CONFIRM<\/button>/g, ">ПОДТВЕРДИТЬ</button>")
         .replace(/ WARMEST<\/text>/g, " САМАЯ ТЁПЛАЯ<\/text>")
         .replace(/>(IDLE|HEATING|COOLING|DRYING|FAN|OFF|AUTO|UNAVAILABLE)<\/span>/g,
           (_, word) => ">" + words[word] + "<\/span>")
