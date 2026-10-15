@@ -128,18 +128,30 @@ template:
 script:
   heating_boost_two_hours:
     alias: Отопление — временный форсаж
-    description: Установить временный форсаж на заданное число минут. Повторное нажатие продлевает отсчёт.
-    mode: restart
+    description: Первое нажатие включает форсаж, повторное отключает его досрочно.
+    mode: queued
+    max: 2
     sequence:
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.heating_vacation
-      - action: input_datetime.set_datetime
-        target:
-          entity_id: input_datetime.heating_boost_until
-        data:
-          datetime: >-
-            {{ (now() + timedelta(minutes=states('input_number.heating_boost_minutes') | int(120))).strftime('%Y-%m-%d %H:%M:%S') }}
+      - if:
+          - condition: template
+            value_template: >-
+              {{ is_state('sensor.heating_control_mode', 'boost') }}
+        then:
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.heating_boost_until
+            data:
+              datetime: "{{ (now() - timedelta(seconds=1)).strftime('%Y-%m-%d %H:%M:%S') }}"
+        else:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.heating_vacation
+          - action: input_datetime.set_datetime
+            target:
+              entity_id: input_datetime.heating_boost_until
+            data:
+              datetime: >-
+                {{ (now() + timedelta(minutes=states('input_number.heating_boost_minutes') | int(120))).strftime('%Y-%m-%d %H:%M:%S') }}
 
 automation:
   # One-time defaults. After initial setup, HA restores user-edited helper values
