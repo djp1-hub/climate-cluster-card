@@ -12,6 +12,9 @@ input_boolean:
   heating_vacation:
     name: Режим отпуск
     icon: mdi:palm-tree
+  heating_initialized:
+    name: Параметры отопления инициализированы
+    icon: mdi:check-circle
 
 input_number:
   heating_base_temperature:
@@ -21,47 +24,40 @@ input_number:
     step: 0.5
     unit_of_measurement: "°C"
     icon: mdi:thermometer
-    initial: 22
   heating_morning_delta:
     name: Прибавка утром
     min: 0
     max: 6
     step: 0.5
     unit_of_measurement: "°C"
-    initial: 2
   heating_boost_delta:
     name: Прибавка по таймеру
     min: 0
     max: 6
     step: 0.5
     unit_of_measurement: "°C"
-    initial: 2
   heating_boost_minutes:
     name: Продолжительность таймера
     min: 15
     max: 480
     step: 15
     unit_of_measurement: "min"
-    initial: 120
   heating_vacation_temperature:
     name: Температура отпуска
     min: 10
     max: 22
     step: 0.5
     unit_of_measurement: "°C"
-    initial: 16
 
 input_datetime:
   heating_morning_start:
     name: Начало утреннего обогрева
     has_date: false
     has_time: true
-    initial: "06:00:00"
   heating_morning_end:
     name: Конец утреннего обогрева
     has_date: false
     has_time: true
-    initial: "08:00:00"
   heating_boost_until:
     name: Таймер обогрева до
     has_date: true
@@ -146,6 +142,48 @@ script:
             {{ (now() + timedelta(minutes=states('input_number.heating_boost_minutes') | int(120))).strftime('%Y-%m-%d %H:%M:%S') }}
 
 automation:
+  # One-time defaults. After initial setup, HA restores user-edited helper values
+  # across restarts (the initialized boolean also persists).
+  - id: heating_profiles_initialize
+    alias: Отопление — первичная настройка
+    mode: single
+    triggers:
+      - trigger: homeassistant
+        event: start
+    actions:
+      - delay: "00:00:05"
+      - condition: state
+        entity_id: input_boolean.heating_initialized
+        state: "off"
+      - repeat:
+          for_each:
+            - { entity: input_number.heating_base_temperature, value: 22 }
+            - { entity: input_number.heating_morning_delta, value: 2 }
+            - { entity: input_number.heating_boost_delta, value: 2 }
+            - { entity: input_number.heating_boost_minutes, value: 120 }
+            - { entity: input_number.heating_vacation_temperature, value: 16 }
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: "{{ repeat.item.entity }}"
+              data:
+                value: "{{ repeat.item.value }}"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.heating_morning_start
+        data:
+          time: "06:00:00"
+      - action: input_datetime.set_datetime
+        target:
+          entity_id: input_datetime.heating_morning_end
+        data:
+          time: "08:00:00"
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+            - input_boolean.heating_morning_enabled
+            - input_boolean.heating_initialized
+
   - id: heating_profiles_apply
     alias: Отопление — применить профиль
     mode: restart
