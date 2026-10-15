@@ -84,7 +84,16 @@ template:
           {{ 'vacation' if vacation else 'boost' if boost else 'morning' if morning else 'normal' }}
         attributes:
           target_temperature: >-
-            {% set mode = states('sensor.heating_control_mode') %}
+            {% set vacation = is_state('input_boolean.heating_vacation', 'on') %}
+            {% set until = as_timestamp(states('input_datetime.heating_boost_until'), 0) %}
+            {% set boost = until > as_timestamp(now()) %}
+            {% set enabled = is_state('input_boolean.heating_morning_enabled', 'on') %}
+            {% set t = now().strftime('%H:%M:%S') %}
+            {% set start = states('input_datetime.heating_morning_start') %}
+            {% set finish = states('input_datetime.heating_morning_end') %}
+            {% set morning = enabled and start not in ['unknown','unavailable'] and finish not in ['unknown','unavailable']
+                and ((start <= t < finish) if start < finish else (t >= start or t < finish)) if start != finish else false %}
+            {% set mode = 'vacation' if vacation else 'boost' if boost else 'morning' if morning else 'normal' %}
             {% set base = states('input_number.heating_base_temperature') | float(22) %}
             {% if mode == 'vacation' %}
               {{ states('input_number.heating_vacation_temperature') | float(16) }}
@@ -94,7 +103,16 @@ template:
               {{ base + (states('input_number.heating_morning_delta') | float(2)) }}
             {% else %} {{ base }} {% endif %}
           next_change: >-
-            {% set mode = states('sensor.heating_control_mode') %}
+            {% set vacation = is_state('input_boolean.heating_vacation', 'on') %}
+            {% set until = as_timestamp(states('input_datetime.heating_boost_until'), 0) %}
+            {% set boost = until > as_timestamp(now()) %}
+            {% set enabled = is_state('input_boolean.heating_morning_enabled', 'on') %}
+            {% set t = now().strftime('%H:%M:%S') %}
+            {% set start = states('input_datetime.heating_morning_start') %}
+            {% set finish = states('input_datetime.heating_morning_end') %}
+            {% set morning = enabled and start not in ['unknown','unavailable'] and finish not in ['unknown','unavailable']
+                and ((start <= t < finish) if start < finish else (t >= start or t < finish)) if start != finish else false %}
+            {% set mode = 'vacation' if vacation else 'boost' if boost else 'morning' if morning else 'normal' %}
             {% if mode == 'vacation' %}до отмены
             {% elif mode == 'boost' %}
               {% set remain = (as_timestamp(states('input_datetime.heating_boost_until'),0) - as_timestamp(now())) | int(0) %}
