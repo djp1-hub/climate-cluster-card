@@ -8168,7 +8168,8 @@ ${FACE.KEYFRAMES}
       const controls = this._config && this._config.heating_controls;
       if (controls && typeof controls === "object") {
         for (const id of [controls.mode_entity, controls.morning_entity,
-          controls.boost_entity, controls.vacation_entity, controls.boiler_entity]) {
+          controls.boost_entity, controls.vacation_entity, controls.boiler_entity,
+          controls.boost_delta_entity, controls.boost_minutes_entity]) {
           if (!id) continue;
           const entity = this._hass.states[id];
           parts.push("heating:" + id + ":" + (entity
@@ -9123,11 +9124,17 @@ ${FACE.KEYFRAMES}
       const ru = langOf(this._hass) === "ru";
       const isOn = (id) => !!id && !!this._st(id) && this._st(id).state === "on";
       const holiday = isOn(cfg.vacation_entity);
+      const boostDelta = cfg.boost_delta_entity && this._st(cfg.boost_delta_entity);
+      const boostTime = cfg.boost_minutes_entity && this._st(cfg.boost_minutes_entity);
+      const delta = boostDelta && Number(boostDelta.state);
+      const mins = boostTime && Number(boostTime.state);
+      const increment = Number.isFinite(delta) ? ("+" + delta + "°") : "+2°";
+      const duration = Number.isFinite(mins) ? (" · " + mins + "м") : "";
       return [
         { id: "profile:morning", lit: isOn(cfg.morning_entity),
           label: ru ? "Утренний обогрев" : "Morning heat" },
         { id: "profile:boost", lit: isOn(cfg.boost_entity), warn: holiday,
-          label: ru ? "Таймер +2°" : "Timed +2°" },
+          label: (ru ? "Таймер " : "Timed ") + increment + duration },
         { id: "profile:vacation", lit: holiday,
           label: ru ? "Отпуск" : "Vacation" }
       ];
