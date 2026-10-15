@@ -1633,13 +1633,17 @@
 
   // Breeze-style outer airflow, adapted from the single-dial BREEZE ribbons.
   // Each wavy ribbon keeps its own dash pattern and phase speed.
-  function breezeArc(r, amp, wave) {
+  function breezeArc(r, amp, wave, endAngle) {
+    var end = clamp(endAngle, A0, A0 + SPAN);
+    if (end <= A0) return "";
     var path = "";
-    for (var a = A0; a <= A0 + SPAN; a += 2) {
+    for (var a = A0; a < end; a += 2) {
       var p = P(r + amp * Math.sin(a * Math.PI * 2 / wave), a);
       path += (a === A0 ? "M" : "L") + f(p[0]) + " " + f(p[1]);
     }
-    return path;
+    // Include the exact target angle, not just the last 2-degree sample.
+    var tip = P(r + amp * Math.sin(end * Math.PI * 2 / wave), end);
+    return path + "L" + f(tip[0]) + " " + f(tip[1]);
   }
   var BREEZE_GROUP = [
     { r: 118, amp: 1.3, wave: 24, dash: "13 9", width: 1.1, alpha: .48, speed: 13.7 },
@@ -1647,7 +1651,7 @@
     { r: 125, amp: 1.0, wave: 18, dash: "10 7", width: 1.0, alpha: .42, speed: 8.9 },
     { r: 129, amp: 1.5, wave: 20, dash: "8 6", width: 1.0, alpha: .32, speed: 16.5 }
   ];
-  function breezeGroup() {
+  function breezeGroup(endAngle) {
     return '<g class="cg-breeze-flow" pointer-events="none">' +
       BREEZE_GROUP.map(function (b) {
         // One loop must advance by a whole number of dash/gap periods.
@@ -1656,7 +1660,7 @@
         var pieces = b.dash.split(" ").map(Number);
         var period = pieces[0] + pieces[1];
         var cycle = period * Math.max(1, Math.round(240 / period));
-        return '<path d="' + breezeArc(b.r, b.amp, b.wave) +
+        return '<path d="' + breezeArc(b.r, b.amp, b.wave, endAngle) +
           '" fill="none" stroke="#d4e8ed" stroke-width="' + b.width +
           '" stroke-linecap="round" stroke-dasharray="' + b.dash +
           '" opacity="' + b.alpha + '" style="animation-duration:' + b.speed +
@@ -1682,7 +1686,7 @@
         HW + '" stroke-linecap="round"></path>' +
       '<path d="' + arcPath(HR, ta, A0 + SPAN) + '" fill="none" stroke="url(#mWarm)" ' +
         'stroke-width="' + HW + '" stroke-linecap="round"></path>' +
-      (s.airflowActive ? breezeGroup() : '') +
+      (s.airflowActive ? breezeGroup(ta) : '') +
       /* drag band: the hero sets the house target */
       '<path d="' + arcPath(HR, A0, A0 + SPAN) + '" fill="none" stroke="rgba(0,0,0,0)" ' +
         'stroke-width="34" stroke-linecap="round" data-act="house" ' +
