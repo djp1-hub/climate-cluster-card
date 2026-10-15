@@ -8932,20 +8932,22 @@ ${FACE.KEYFRAMES}
         ? this._config.orientation : "auto";
       let html = '<div class="cg-zonecard" data-orient="' + orient
         + '" style="position:relative; font-family:' + FONT_STACK + ';">';
-      html += '<div style="display:flex; align-items:baseline; justify-content:space-between;'
-        + ' gap:14px; padding-bottom:6px; border-bottom:1px solid rgba(225,231,237,.12);">'
-        + '<div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">'
+      html += '<div style="display:flex; align-items:flex-start; justify-content:space-between;'
+        + ' gap:14px; padding-bottom:9px; border-bottom:1px solid rgba(225,231,237,.12);">'
+        + '<div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;flex:1;">'
         + '<span style="font:600 22px/1 inherit; letter-spacing:.08em; text-transform:uppercase;'
         + ' color:var(--primary-text-color, #f2f5f8);">' + model.name + '</span>'
         + outdoorHtml + this._heatingStatusHtml() + '</div>'
-        // the shipped card's N / M survives: d.on alone cannot tell 4 of 5 from 4 of 9,
-        // and the total is the reading that shows a zone has fallen out of the config.
-        + '<span style="display:flex; align-items:center; gap:8px;'
-        + ' font:600 12px/1 ui-monospace,monospace; letter-spacing:.07em;">'
-        + '<span style="color:var(--cg-accent, #27d3ff);">' + d.cooling + ' ' + this._t("cooling") + '</span>'
-        + '<span style="color:#546070;">·</span>'
-        + '<span style="color:var(--secondary-text-color, #8b95a2);">' + d.on + ' / '
-        + model.zones.length + '</span></span></div>';
+        // For a heating-only control panel, the generic cooling counter is
+        // misleading and wraps awkwardly on narrow screens. Keep it for the
+        // ordinary multi-HVAC group card, but omit it for heating profiles.
+        + (this._heatingControls() ? '' :
+          '<span style="display:flex; align-items:center; gap:8px;' +
+          ' font:600 12px/1 ui-monospace,monospace; letter-spacing:.07em;">' +
+          '<span style="color:var(--cg-accent, #27d3ff);">' + d.cooling + ' ' + this._t("cooling") + '</span>' +
+          '<span style="color:#546070;">·</span>' +
+          '<span style="color:var(--secondary-text-color, #8b95a2);">' + d.on + ' / ' +
+          model.zones.length + '</span></span>') + '</div>';
 
       html += '<div class="cg-zonecard-body" style="display:grid;'
         + ' grid-template-columns:236px minmax(0,1fr); gap:18px; align-items:stretch;'
