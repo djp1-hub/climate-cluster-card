@@ -94,6 +94,160 @@
   // is read from hass.language (then hass.locale.language); a region subtag is
   // stripped (es-419 -> es). Keep values free of em dashes (use a hyphen).
   const LOCALE = {
+    ru: {
+    "now": "СЕЙЧАС",
+    "swing": "ЖАЛЮЗИ",
+    "led": "ДИСПЛЕЙ",
+    "sound": "ЗВУК",
+    "close": "Закрыть",
+    "unavailable": "НЕДОСТУПНО",
+    "preset": "Пресет",
+    "swing_h": "ГОРИЗ. ЖАЛЮЗИ",
+    "increase_temp": "Повысить температуру",
+    "decrease_temp": "Понизить температуру",
+    "auto": "АВТО",
+    "automatic": "Автоматически",
+    "percent": "процентов",
+    "fan": "Вентилятор",
+    "mode": "Режим",
+    "to": "до",
+    "on": "вкл.",
+    "off": "выкл.",
+    "celsius": "Цельсий",
+    "fahrenheit": "Фаренгейт",
+    "missing": "ОТСУТСТВУЕТ",
+    "climate_control": "управление климатом",
+    "set_fan_auto": "Автоматическая скорость вентилятора",
+    "change_mode": "Изменить режим",
+    "target_temperature": "Целевая температура",
+    "fan_speed": "Скорость вентилятора",
+    "select_mode": "Выбор режима",
+    "hint_mode": "РЕЖИМ",
+    "hint_fan": "ВЕНТ.",
+    "hint_auto": "АВТО",
+    "cooling": "ОХЛАЖДЕНИЕ",
+    "all_off": "ВЫКЛЮЧИТЬ ВСЁ",
+    "all_on": "ВКЛЮЧИТЬ ВСЁ",
+    "confirm_off": "ПОДТВЕРДИТЬ",
+    "sync": "СИНХРОНИЗИРОВАТЬ",
+    "editor.section.appearance": "Внешний вид",
+    "editor.section.modes": "Режимы",
+    "editor.section.presets": "Пресеты",
+    "editor.section.fan": "Вентилятор",
+    "editor.section.features": "Функции",
+    "editor.section.extra_toggles": "Дополнительные переключатели",
+    "editor.section.layout": "Компоновка",
+    "editor.section.actions": "Действия",
+    "editor.section.mode_colors": "Цвета режимов",
+    "editor.section.mode_names": "Названия режимов",
+    "editor.section.rail": "Кнопки под шкалой",
+    "editor.opt.auto": "Авто",
+    "editor.opt.show": "Показать",
+    "editor.opt.hide": "Скрыть",
+    "editor.opt.unit_fahrenheit": "Фаренгейт",
+    "editor.opt.unit_celsius": "Цельсий",
+    "editor.opt.anim_dynamic": "Динамическая",
+    "editor.opt.anim_constant": "Постоянная",
+    "editor.opt.anim_off": "Выключена",
+    "editor.opt.fan_style_original": "Обычное кольцо",
+    "editor.opt.fan_style_breeze": "Ветерок",
+    "editor.opt.fan_style_silk": "Плавная",
+    "editor.opt.rail_fan": "Вентилятор",
+    "editor.opt.rail_swing": "Жалюзи",
+    "editor.opt.rail_led": "Дисплей",
+    "editor.opt.rail_sound": "Звук",
+    "editor.opt.rail_extra": "Свой переключатель",
+    "editor.opt.appearance_theme": "Тема Home Assistant",
+    "editor.opt.appearance_glass_dark": "Матовое стекло (тёмное)",
+    "editor.opt.appearance_glass_light": "Матовое стекло (светлое)",
+    "editor.warn_range": "Минимальная температура должна быть ниже максимальной. Пока диапазон неверен, шкала использует фиксированные значения.",
+    "editorLabels": {
+      "entity": "Климатическая сущность",
+      "name": "Название",
+      "fan_style": "Кольцо вентилятора",
+      "rail": "Кнопки и порядок",
+      "fan_clover": "Вращающийся вентилятор",
+      "appearance": "Фон",
+      "reset_styling": "Сбросить оформление",
+      "glass_color": "Оттенок стекла",
+      "glass_opacity": "Прозрачность стекла",
+      "accent": "Акцентный цвет",
+      "font": "Шрифт",
+      "font_url": "URL таблицы стилей шрифта",
+      "temperature_unit": "Единицы температуры",
+      "temp_step": "Шаг",
+      "min_temp": "Минимальная температура",
+      "max_temp": "Максимальная температура",
+      "show_scale": "Показать шкалу",
+      "show_current": "Показать текущую температуру",
+      "modes": "Режимы",
+      "fan_entity": "Сущность скорости вентилятора (number.*)",
+      "__advanced": "Все настройки",
+      "show_fan": "Кольцо и кнопка вентилятора",
+      "show_presets": "Показать пресеты",
+      "show_humidity": "Показать влажность",
+      "zone_rows": "Ряды комнат",
+      "action_rows": "Ряды кнопок",
+      "show_swing_h": "Горизонтальные жалюзи",
+      "swing_h_entity": "Сущность горизонтальных жалюзи",
+      "show_steppers": "Кнопки + / −",
+      "fan_animation": "Анимация вентилятора",
+      "fan_animation_speed": "Скорость анимации",
+      "swing_entity": "Сущность жалюзи",
+      "show_swing": "Показать жалюзи",
+      "led_entity": "Сущность дисплея",
+      "show_led": "Показать дисплей",
+      "sound_entity": "Сущность звука",
+      "show_sound": "Показать звук",
+      "extra_toggles": "Дополнительные переключатели",
+      "show_hints": "Подсказки управления",
+      "max_height": "Максимальная высота",
+      "tap_action": "Нажатие",
+      "hold_action": "Удержание",
+      "double_tap_action": "Двойное нажатие"
+    },
+    "editorHelpers": {
+      "name": "Название карточки; по умолчанию берётся имя сущности.",
+      "rail": "Выберите кнопки и порядок их отображения.",
+      "appearance": "Тема следует оформлению Home Assistant. Матовое стекло сохраняет собственный фон.",
+      "reset_styling": "Сбрасывает цвета, шрифт и оформление без изменения сущностей.",
+      "glass_color": "Цвет фона в режиме матового стекла.",
+      "glass_opacity": "Прозрачность фона от 0 до 1.",
+      "accent": "Основной акцентный цвет элементов управления.",
+      "font": "Оставьте пустым для шрифта темы Home Assistant.",
+      "font_url": "Необязательная ссылка на CSS шрифта.",
+      "temperature_unit": "Авто использует единицы Home Assistant.",
+      "temp_step": "Шаг установки температуры.",
+      "min_temp": "Пустое поле — минимум сущности.",
+      "max_temp": "Пустое поле — максимум сущности.",
+      "show_scale": "Числовая шкала вокруг циферблата.",
+      "show_current": "Текущая температура и указатель.",
+      "modes": "Режимы для всплывающего меню.",
+      "fan_entity": "Сущность number.* со скоростью вентилятора.",
+      "__advanced": "Расширенные настройки режимов, вентилятора и оформления.",
+      "show_fan": "Скрывает кольцо и кнопку вентилятора.",
+      "show_presets": "Показать строку пресетов.",
+      "show_humidity": "Показать текущую влажность.",
+      "zone_rows": "Число рядов комнат; пустое поле — автоматически.",
+      "action_rows": "Число рядов кнопок; пустое поле — автоматически.",
+      "show_swing_h": "Показывать управление горизонтальными жалюзи.",
+      "show_steppers": "Показывать кнопки изменения уставки.",
+      "fan_animation": "Анимация вентилятора.",
+      "fan_animation_speed": "Скорость анимации.",
+      "swing_entity": "Сущность переключателя жалюзи.",
+      "show_swing": "Показывать переключатель жалюзи.",
+      "led_entity": "Сущность дисплея.",
+      "show_led": "Показывать переключатель дисплея.",
+      "sound_entity": "Сущность звука.",
+      "show_sound": "Показывать переключатель звука.",
+      "extra_toggles": "Список дополнительных сущностей.",
+      "show_hints": "Подсказки на шкале.",
+      "max_height": "Ограничение высоты, например 360px.",
+      "tap_action": "Действие при нажатии.",
+      "hold_action": "Действие при удержании.",
+      "double_tap_action": "Действие при двойном нажатии."
+    }
+  },
     en: {
       now: "NOW",
       swing: "SWING",
@@ -8577,6 +8731,23 @@ ${FACE.KEYFRAMES}
         ? String(p).toUpperCase() : "";
     }
 
+    _localizeZoneHtml(html) {
+      if (langOf(this._hass) !== "ru") return html;
+      const words = { "IDLE": "ОЖИДАНИЕ", "HEATING": "НАГРЕВ", "COOLING": "ОХЛАЖДЕНИЕ",
+        "DRYING": "ОСУШЕНИЕ", "FAN": "ВЕНТИЛЯЦИЯ", "OFF": "ВЫКЛ.", "AUTO": "АВТО",
+        "UNAVAILABLE": "НЕДОСТУПНО" };
+      // Translate only rendered static text nodes; never replace names, attributes or entity IDs.
+      return html
+        .replace(/>AVG ROOM<\/text>/g, ">СР. ТЕМП.<\/text>")
+        .replace(/>TARGET<\/text>/g, ">УСТАВКА<\/text>")
+        .replace(/>SPREAD /g, ">РАЗБРОС ")
+        .replace(/ WARMEST<\/text>/g, " САМАЯ ТЁПЛАЯ<\/text>")
+        .replace(/>(IDLE|HEATING|COOLING|DRYING|FAN|OFF|AUTO|UNAVAILABLE)<\/span>/g,
+          (_, word) => ">" + words[word] + "<\/span>")
+        .replace(/aria-label="lower"/g, 'aria-label="Понизить температуру"')
+        .replace(/aria-label="raise"/g, 'aria-label="Повысить температуру"');
+    }
+
     _renderZoneCard() {
       const model = this._zoneModel();
       const d = ZONE.derive(model);
@@ -8637,7 +8808,7 @@ ${FACE.KEYFRAMES}
          markup and already themed, so only the module's half goes through themeZone. */
       if (html !== this._rawHtml) {
         this._rawHtml = html;
-        const themed = themeZone(html);
+        const themed = themeZone(this._localizeZoneHtml(html));
         if (themed !== this._bodyHtml) { this._bodyHtml = themed; this._inner.innerHTML = themed; }
       }
       /* The open sheet belongs to a ROOM, not to a slot. It was remembered as an index
@@ -8745,7 +8916,7 @@ ${FACE.KEYFRAMES}
       lb.style.display = "";
       const caps = root.querySelectorAll(".cg-zonecard-body > svg text");
       let avg = null;
-      caps.forEach((t) => { if (t.textContent === "AVG ROOM") avg = t; });
+      caps.forEach((t) => { if (["AVG ROOM", "СР. ТЕМП."].includes(t.textContent)) avg = t; });
       if (!avg) return;
       let a, b;
       try { a = lb.getBBox(); b = avg.getBBox(); } catch (e) { return; }
@@ -9473,6 +9644,8 @@ ${FACE.KEYFRAMES}
         "helper.entities": { en: "Every room this card controls. Order is the order they appear.",
           es: "Cada cuarto que controla esta tarjeta. El orden es el que se muestra." },
       };
+      const ru = {"editor.opt.orient_auto":"Автоматически","editor.opt.orient_h":"Горизонтально: шкала рядом с комнатами","editor.opt.orient_v":"Вертикально: комнаты под шкалой","editor.opt.appearance_theme":"Тема Home Assistant","editor.opt.appearance_glass_dark":"Матовое стекло (тёмное)","editor.opt.appearance_glass_light":"Матовое стекло (светлое)","editor.opt.hero_average":"Среднее по комнатам","editor.opt.hero_hottest":"Самая тёплая комната","editor.opt.tap_focus":"Показать на шкале","editor.opt.tap_more_info":"Открыть сведения","editor.sec.appearance":"Внешний вид","editor.sec.layout":"Компоновка","editor.sec.bar":"Кнопки внизу","editor.opt.act_off":"Выключить / включить всё","editor.opt.act_sync":"Синхронизировать всё","label.actions":"Кнопки и их порядок","helper.actions":"Оставьте пустым для стандартного набора кнопок. Пресеты зависят от возможностей термостатов.","editor.sec.range":"Диапазон температур","label.entities":"Комнаты","label.name":"Заголовок карточки","label.orientation":"Ориентация","helper.orientation":"Автоматически располагает комнаты в ряд на широком экране и друг под другом на узком.","label.accent":"Акцентный цвет","label.temp_step":"Шаг температуры","helper.temp_step":"Изменение температуры при одном нажатии + или −.","label.zone_rows":"Ряды комнат","label.action_rows":"Ряды кнопок","label.group_actions":"Показать панель кнопок","helper.zone_rows":"Оставьте пустым для автоматического переноса комнат.","helper.entities":"Выберите комнаты в нужном порядке."};
+      if (langOf(this._hass) === "ru" && ru[k]) return ru[k];
       const row = M[k] || {};
       return row[langOf(this._hass)] || row.en || k;
     }
