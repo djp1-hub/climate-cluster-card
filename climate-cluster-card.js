@@ -8147,7 +8147,8 @@ ${FACE.KEYFRAMES}
       if (!this._hass) return "";
       const parts = [this._focus || "", "locale:" + langOf(this._hass)];
       for (const id of [this._config && this._config.heat_demand_entity,
-                        this._config && this._config.ac_entity]) {
+                        this._config && this._config.ac_entity,
+                        this._config && this._config.outdoor_temperature_entity]) {
         if (!id) continue;
         const state = this._hass.states[id];
         parts.push("external:" + id + ":" + (state ? state.state + ":" +
@@ -8861,6 +8862,8 @@ ${FACE.KEYFRAMES}
         '<div style="font:400 34px/.82 Rajdhani,sans-serif;color:var(--primary-text-color,#f6f8fa);">' +
         value + '<span style="font-size:14px;color:var(--secondary-text-color,#8b95a2);">' +
         unit + '</span></div>' +
+        // Match the empty setpoint/stepper row in a controlled room.
+        '<div aria-hidden="true" style="height:30px;width:100%;flex-shrink:0;"></div>' +
         '<div style="width:100%;height:4px;border-radius:5px;background:rgba(225,231,237,.10);"></div>' +
         '<div style="font:600 10.5px/1 ui-monospace,monospace;letter-spacing:.06em;' +
         'color:var(--secondary-text-color,#9aa5b1);">' + desc + '</div></div>';
@@ -8890,14 +8893,29 @@ ${FACE.KEYFRAMES}
 
       const card = this.shadowRoot && this.shadowRoot.querySelector(".cg-card");
       if (card) card.setAttribute("data-ink", this._inkGround(card));
+      const outsideEntity = this._config && this._config.outdoor_temperature_entity;
+      const outsideState = outsideEntity && this._st(outsideEntity);
+      const outsideRaw = outsideState && !["unknown", "unavailable"].includes(outsideState.state)
+        ? Number(outsideState.state) : NaN;
+      const outsideValue = Number.isFinite(outsideRaw) ? this._toDisplay(outsideRaw) : null;
+      const outsideLabel = langOf(this._hass) === "ru" ? "НА УЛИЦЕ" : "OUTSIDE";
+      const outdoorHtml = outsideEntity
+        ? '<span style="display:block;margin-top:7px;font:600 12px/1.2 ui-monospace,monospace;' +
+            'letter-spacing:.09em;color:var(--secondary-text-color,#9aa5b1);">' +
+            outsideLabel + ': ' +
+            (outsideValue == null ? '—' : (Math.round(outsideValue * 10) / 10).toFixed(1) + '°') +
+          '</span>'
+        : '';
       const orient = ["horizontal", "vertical"].indexOf(this._config.orientation) >= 0
         ? this._config.orientation : "auto";
       let html = '<div class="cg-zonecard" data-orient="' + orient
         + '" style="position:relative; font-family:' + FONT_STACK + ';">';
       html += '<div style="display:flex; align-items:baseline; justify-content:space-between;'
         + ' gap:14px; padding-bottom:6px; border-bottom:1px solid rgba(225,231,237,.12);">'
+        + '<div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">'
         + '<span style="font:600 22px/1 inherit; letter-spacing:.08em; text-transform:uppercase;'
         + ' color:var(--primary-text-color, #f2f5f8);">' + model.name + '</span>'
+        + outdoorHtml + '</div>'
         // the shipped card's N / M survives: d.on alone cannot tell 4 of 5 from 4 of 9,
         // and the total is the reading that shows a zone has fallen out of the config.
         + '<span style="display:flex; align-items:center; gap:8px;'
