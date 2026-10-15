@@ -1523,7 +1523,7 @@
       '<text x="200" y="200" text-anchor="start" dominant-baseline="central" ' +
         'font-size="20" fill="#9aa5b1">\u00b0</text>' +
       '<text x="168" y="264" text-anchor="middle" font-size="11" font-weight="600" ' +
-        'letter-spacing="2" fill="#9aa5b1">SPREAD ' + d.spread + '\u00b0 \u00b7 ' +
+        'letter-spacing="2" fill="#9aa5b1">SPREAD ' + Number(d.spread.toFixed(1)) + '\u00b0 \u00b7 ' +
         String(d.warmest.name || '').toUpperCase() + ' WARMEST</text>' +
       '</svg>';
   }
@@ -1716,7 +1716,7 @@
         '<span style="text-align:center; font:600 10px/1 ui-monospace,monospace; ' +
           'letter-spacing:.08em; color:#8b95a2;">' + (nore ? DASH : z.set) +
           (nore ? '' : '<span style="color:' + (delta >= 5 ? '#7fe4ff' : on ? m.ink : '#8b95a2') +
-            '"> ' + (delta >= 0 ? '+' : '') + delta + '</span>') + '</span>' +
+            '"> ' + (delta >= 0 ? '+' : '') + Number(delta.toFixed(1)) + '</span>') + '</span>' +
         '<button type="button" aria-label="raise" data-act="inc" style="' + btn + '">+</button></div>' +
       (nore ? EMPTY_STRIP : strip(z, d)) +
       '<div style="display:flex; align-items:center; justify-content:center; gap:8px; padding-top:1px;">' +
