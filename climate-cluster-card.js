@@ -8750,11 +8750,16 @@ ${FACE.KEYFRAMES}
       const acState = acEntity && this._st(acEntity);
       const acAction = String((acState && acState.attributes && acState.attributes.hvac_action) || "").toLowerCase();
       // A hybrid entity can report heat provided by the boiler, so use a separate AC entity.
-      const acFanActive = !!acState && acState.state !== "unavailable" &&
-        acState.state !== "unknown" &&
+      // IR-only climate integrations often expose the commanded HVAC mode but no
+      // hvac_action. In that case show requested airflow, not verified fan operation.
+      const acMode = String((acState && acState.state) || "").toLowerCase();
+      const acFanActive = !!acState && acMode !== "unavailable" &&
+        acMode !== "unknown" &&
         (acEntity.startsWith("climate.")
-          ? ["heating", "cooling", "fan", "drying"].includes(acAction)
-          : acState.state === "on");
+          ? (acAction
+              ? ["heating", "cooling", "fan", "drying"].includes(acAction)
+              : ["heat", "cool", "fan_only", "dry"].includes(acMode))
+          : acMode === "on");
       const acZone = (this._config && this._config.ac_zone_entity) || "climate.living_room_hybrid";
       zones.forEach((z) => { z.acFanActive = acFanActive && z.id === acZone; });
       return {
