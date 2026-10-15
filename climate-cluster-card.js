@@ -8165,6 +8165,16 @@ ${FACE.KEYFRAMES}
         parts.push("external:" + id + ":" + (state ? state.state + ":" +
           ((state.attributes || {}).hvac_action || "") : "missing"));
       }
+      const controls = this._config && this._config.heating_controls;
+      if (controls && typeof controls === "object") {
+        for (const id of [controls.mode_entity, controls.morning_entity,
+          controls.boost_entity, controls.vacation_entity, controls.boiler_entity]) {
+          if (!id) continue;
+          const entity = this._hass.states[id];
+          parts.push("heating:" + id + ":" + (entity
+            ? entity.state + ":" + JSON.stringify(entity.attributes || {}) : "missing"));
+        }
+      }
       for (const sensor of (this._displaySensors || [])) {
         const st = this._hass.states[sensor.entity];
         parts.push("display:" + sensor.entity + ":" + (st ? st.state + ":" +
@@ -8926,7 +8936,7 @@ ${FACE.KEYFRAMES}
         + '<div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">'
         + '<span style="font:600 22px/1 inherit; letter-spacing:.08em; text-transform:uppercase;'
         + ' color:var(--primary-text-color, #f2f5f8);">' + model.name + '</span>'
-        + outdoorHtml + '</div>'
+        + outdoorHtml + this._heatingStatusHtml() + '</div>'
         // the shipped card's N / M survives: d.on alone cannot tell 4 of 5 from 4 of 9,
         // and the total is the reading that shows a zone has fallen out of the config.
         + '<span style="display:flex; align-items:center; gap:8px;'
@@ -9100,7 +9110,60 @@ ${FACE.KEYFRAMES}
        a unit with a preset outside that set is offered it and one that rejects a
        member never sees it. A name nothing supports is skipped rather than drawn as a
        button that cannot act. */
+    // Optional heating control UI. Home Assistant scripts/automations own all
+    // scheduling and timers; the Lovelace card remains a stateless remote control.
+    _heatingControls() {
+      const cfg = this._config && this._config.heating_controls;
+      return cfg && typeof cfg === "object" ? cfg : null;
+    }
+
+    _heatingProfileActions() {
+      const cfg = this._heatingControls();
+      if (!cfg) return [];
+      const ru = langOf(this._hass) === "ru";
+      const isOn = (id) => !!id && !!this._st(id) && this._st(id).state === "on";
+      const holiday = isOn(cfg.vacation_entity);
+      return [
+        { id: "profile:morning", lit: isOn(cfg.morning_entity),
+          label: ru ? "Утренний обогрев" : "Morning heat" },
+        { id: "profile:boost", lit: isOn(cfg.boost_entity), warn: holiday,
+          label: ru ? "Таймер +2°" : "Timed +2°" },
+        { id: "profile:vacation", lit: holiday,
+          label: ru ? "Отпуск" : "Vacation" }
+      ];
+    }
+
+    _heatingStatusHtml() {
+      const cfg = this._heatingControls();
+      if (!cfg) return "";
+      const ru = langOf(this._hass) === "ru";
+      const st = cfg.mode_entity && this._st(cfg.mode_entity);
+      const mode = st && ["normal","morning","boost","vacation"].includes(st.state)
+        ? st.state : "unavailable";
+      const labels = ru
+        ? {normal:"ОБЫЧНЫЙ",morning:"УТРО",boost:"ТАЙМЕР",vacation:"ОТПУСК",unavailable:"НЕТ ДАННЫХ"}
+        : {normal:"NORMAL",morning:"MORNING",boost:"BOOST",vacation:"VACATION",unavailable:"UNAVAILABLE"};
+      const a = st && st.attributes || {};
+      const temp = Number(a.target_temperature);
+      const target = Number.isFinite(temp) ? " · " + (Math.round(temp * 10) / 10) + "°" : "";
+      const next = typeof a.next_change === "string" && a.next_change
+        ? " · " + escapeText(a.next_change) : "";
+      const boiler = cfg.boiler_entity && this._st(cfg.boiler_entity);
+      const state = boiler ? boiler.state : "unavailable";
+      const boilerName = ru ? "КОТЁЛ" : "BOILER";
+      const boilerStatus = state === "on" ? (ru ? "ВКЛ" : "ON")
+        : state === "off" ? (ru ? "ВЫКЛ" : "OFF") : (ru ? "НЕТ СВЯЗИ" : "UNAVAILABLE");
+      const boilerInk = state === "on" ? "#f7b15d" : state === "off"
+        ? "var(--secondary-text-color,#9aa5b1)" : "#f28d7e";
+      return '<div class="cg-heating-status" style="display:flex;flex-wrap:wrap;gap:6px 16px;' +
+        'font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.05em;' +
+        'color:var(--secondary-text-color,#9aa5b1);margin-top:6px;">' +
+        '<span>' + (ru ? "РЕЖИМ: " : "MODE: ") + labels[mode] + target + next + '</span>' +
+        '<span style="color:' + boilerInk + ';">' + boilerName + ': ' + boilerStatus + '</span></div>';
+    }
+
     _zoneActions(model, d, ui) {
+      if (this._heatingControls()) return this._heatingProfileActions();
       const shared = this._sharedPresets();
       const known = {};
       /* The labels come from the table, not from the module.
@@ -9388,6 +9451,17 @@ ${FACE.KEYFRAMES}
          reached that swallow first and every group action did nothing. */
       if (g) {
         const id = g.dataset.gact;
+        const controls = this._heatingControls();
+        if (controls && id.indexOf("profile:") === 0) {
+          const key = id.slice(8);
+          if (key === "morning" && controls.morning_entity)
+            this._call("input_boolean", "toggle", {entity_id: controls.morning_entity});
+          if (key === "vacation" && controls.vacation_entity)
+            this._call("input_boolean", "toggle", {entity_id: controls.vacation_entity});
+          if (key === "boost" && controls.boost_script)
+            this._call("script", "turn_on", {entity_id: controls.boost_script});
+          return true;
+        }
         /* Disarming is a VISIBLE change, so it has to repaint here rather than lean on
            the branch below it. Sync and confirm repaint on their own; All on and the
            presets write and return, so the flag went false while the warn-coloured
