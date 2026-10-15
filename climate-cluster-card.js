@@ -7140,11 +7140,6 @@ ha-card[data-appearance^="glass"] .ct-card{
    status dot and the zone card's room dots, drift the breeze ribbons, wink the
    preset glyphs. */
 ${FACE.KEYFRAMES}
-/* Animated highlights preserve the continuous blue/orange temperature bands. */
-.cg-heat-flow path{stroke-dasharray:5 19;animation:cgHeatFlow 2.8s linear infinite;opacity:.88;}
-@keyframes cgHeatFlow{to{stroke-dashoffset:-48;}}
-.cg-ac-fan{color:var(--ct-face-ink, #dfe8f4);animation:cgAcFanSpin 2.4s linear infinite;flex-shrink:0;}
-@keyframes cgAcFanSpin{to{transform:rotate(360deg);}}
 @media (prefers-reduced-motion: reduce){
   .ct-face [style*='animation']{ animation:none !important; }
   .ct-face animate{ display:none; }
@@ -7968,6 +7963,11 @@ ha-card[data-appearance^="glass"] .cg-inner{
 /* The sheet's stylesheet speaks --ct-accent and --ct-font; this card publishes the
    same two things under its own names. Alias rather than fork the stylesheet. */
 .cg-card{ --ct-accent: var(--cg-accent, ${DEFAULT_ACCENT}); --ct-font: ${FONT_STACK}; }
+/* Animated highlights preserve the continuous blue/orange temperature bands. */
+.cg-heat-flow path{stroke-dasharray:5 19;animation:cgHeatFlow 2.8s linear infinite;opacity:.88;}
+@keyframes cgHeatFlow{to{stroke-dashoffset:-48;}}
+.cg-ac-fan{color:var(--ct-face-ink, #dfe8f4);animation:cgAcFanSpin 2.4s linear infinite;flex-shrink:0;}
+@keyframes cgAcFanSpin{to{transform:rotate(360deg);}}
 /* Zone card surfaces. Declared here so the glass variants below can retint them the
    same way they retint the text properties, which is what makes glass_color and
    glass_opacity mean something on this layout. */
