@@ -26,7 +26,7 @@
   const NS = "http://www.w3.org/2000/svg";
 
   // ---- console version banner ---------------------------------------------
-  const VERSION = "2.3.2-ru.1";
+  const VERSION = "2.3.2-ru.2";
   console.info(
     "%c CLIMATE-CLUSTER-CARD %c v" + VERSION + " ",
     "color:#0b0f16;background:#4fc3f7;font-weight:700;border-radius:4px 0 0 4px;padding:2px 6px",
@@ -1649,6 +1649,10 @@
         HW + '" stroke-linecap="round"></path>' +
       '<path d="' + arcPath(HR, ta, A0 + SPAN) + '" fill="none" stroke="url(#mWarm)" ' +
         'stroke-width="' + HW + '" stroke-linecap="round"></path>' +
+      (s.heatingActive ? '<g class="cg-heat-flow" pointer-events="none">' +
+        '<path d="' + arcPath(HR, A0, ta) + '" fill="none" stroke="#c9f5ff" stroke-width="2.8" stroke-linecap="round"></path>' +
+        '<path d="' + arcPath(HR, ta, A0 + SPAN) + '" fill="none" stroke="#ffe0af" stroke-width="2.8" stroke-linecap="round"></path>' +
+        '</g>' : '') +
       /* drag band: the hero sets the house target */
       '<path d="' + arcPath(HR, A0, A0 + SPAN) + '" fill="none" stroke="rgba(0,0,0,0)" ' +
         'stroke-width="34" stroke-linecap="round" data-act="house" ' +
@@ -1877,7 +1881,10 @@
         '<span style="font:600 10.5px/1 ui-monospace,monospace; letter-spacing:.06em; color:' +
           actInk + ';">' + act + '</span>' +
         presetIcon(z.preset, m.ink) +
-        fanBars(z.fan) + '</div></div>';
+        fanBars(z.fan) +
+        (z.acFanActive ? '<svg class="cg-ac-fan" viewBox="-16 -16 32 32" width="15" height="15" aria-label="AC fan running" role="img">' +
+          '<path d="' + fanGlyph() + '" fill="currentColor"></path></svg>' : '') +
+        '</div></div>';
   }
 
   /* ---------------------------------------------------------------- footer ---- */
@@ -7133,6 +7140,11 @@ ha-card[data-appearance^="glass"] .ct-card{
    status dot and the zone card's room dots, drift the breeze ribbons, wink the
    preset glyphs. */
 ${FACE.KEYFRAMES}
+/* Animated highlights preserve the continuous blue/orange temperature bands. */
+.cg-heat-flow path{stroke-dasharray:5 19;animation:cgHeatFlow 2.8s linear infinite;opacity:.88;}
+@keyframes cgHeatFlow{to{stroke-dashoffset:-48;}}
+.cg-ac-fan{color:var(--ct-face-ink, #dfe8f4);animation:cgAcFanSpin 2.4s linear infinite;flex-shrink:0;}
+@keyframes cgAcFanSpin{to{transform:rotate(360deg);}}
 @media (prefers-reduced-motion: reduce){
   .ct-face [style*='animation']{ animation:none !important; }
   .ct-face animate{ display:none; }
@@ -7987,6 +7999,7 @@ ha-card[data-appearance="glass-light"] .cg-inner,
 ${FACE.KEYFRAMES}
 @media (prefers-reduced-motion: reduce){
   .cg-zonecard [style*='animation']{ animation:none !important; }
+  .cg-heat-flow path, .cg-ac-fan{ animation:none !important; }
 }
 /* The two spread-ring labels follow their own ring end, so near either end of the
    range they land on the band rather than beside it. Card-coloured knockout, the
@@ -8105,6 +8118,13 @@ ${FACE.KEYFRAMES}
     _signature() {
       if (!this._hass) return "";
       const parts = [this._focus || "", "locale:" + langOf(this._hass)];
+      for (const id of [this._config && this._config.heat_demand_entity,
+                        this._config && this._config.ac_entity]) {
+        if (!id) continue;
+        const state = this._hass.states[id];
+        parts.push("external:" + id + ":" + (state ? state.state + ":" +
+          ((state.attributes || {}).hvac_action || "") : "missing"));
+      }
       for (const z of this._zones) {
         const s = this._hass.states[z.entity];
         if (!s) { parts.push(z.entity + ":-"); continue; }
@@ -8721,9 +8741,25 @@ ${FACE.KEYFRAMES}
             ? a.preset_modes.map((p) => String(p).toUpperCase()) : null,
         };
       });
+      const heatEntity = this._config && this._config.heat_demand_entity;
+      const heatState = heatEntity && this._st(heatEntity);
+      const heatingActive = heatEntity
+        ? !!heatState && heatState.state === "on"
+        : zones.some((z) => !z.dead && String(z.action || "").toLowerCase() === "heating");
+      const acEntity = this._config && this._config.ac_entity;
+      const acState = acEntity && this._st(acEntity);
+      const acAction = String((acState && acState.attributes && acState.attributes.hvac_action) || "").toLowerCase();
+      // A hybrid entity can report heat provided by the boiler, so use a separate AC entity.
+      const acFanActive = !!acState && acState.state !== "unavailable" &&
+        acState.state !== "unknown" &&
+        (acEntity.startsWith("climate.")
+          ? ["heating", "cooling", "fan", "drying"].includes(acAction)
+          : acState.state === "on");
+      const acZone = (this._config && this._config.ac_zone_entity) || "climate.living_room_hybrid";
+      zones.forEach((z) => { z.acFanActive = acFanActive && z.id === acZone; });
       return {
         name: escapeText(this._config.name || "House"),
-        zones,
+        zones, heatingActive,
         target: (this._zui && this._zui.houseTarget != null) ? this._zui.houseTarget : null,
         min: r.lo, max: r.hi,
       };
