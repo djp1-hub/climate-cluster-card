@@ -8104,7 +8104,7 @@ ${FACE.KEYFRAMES}
     // SVG on every unrelated state change in the house.
     _signature() {
       if (!this._hass) return "";
-      const parts = [this._focus || ""];
+      const parts = [this._focus || "", "locale:" + langOf(this._hass)];
       for (const z of this._zones) {
         const s = this._hass.states[z.entity];
         if (!s) { parts.push(z.entity + ":-"); continue; }
@@ -8559,7 +8559,15 @@ ${FACE.KEYFRAMES}
         led: { en: "LED", es: "LED" },
         sound: { en: "SOUND", es: "SONIDO" },
       };
+      const ru = {
+        average: "Средняя температура", running: "работают", now: "СЕЙЧАС",
+        off_word: "Выключено", all_off: "Выключить всё", all_on: "Включить всё",
+        confirm_off: "Подтвердить", sync: "Синхронизировать",
+        unavailable: "Недоступно", cooling: "ОХЛАЖДЕНИЕ", close: "Закрыть",
+        swing: "ЖАЛЮЗИ", led: "ДИСПЛЕЙ", sound: "ЗВУК"
+      };
       const lang = langOf(this._hass);
+      if (lang === "ru" && ru[k]) return ru[k];
       const row = M[k] || {};
       return row[lang] || row.en || k;
     }
