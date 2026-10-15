@@ -8788,7 +8788,7 @@ ${FACE.KEYFRAMES}
       // Translate only rendered static text nodes; never replace names, attributes or entity IDs.
       return html
         .replace(/>AVG ROOM<\/text>/g, ">СР. ТЕМП.<\/text>")
-        .replace(/>TARGET<\/text>/g, ">УСТАВКА<\/text>")
+        .replace(/>TARGET<\/text>/g, ">ЗАДАНО<\/text>")
         .replace(/>SPREAD /g, ">РАЗБРОС ")
         // Legacy group labels may be rendered before the group dictionary is applied.
         .replace(/(>\s*\d+\s+)COOLING(?=<\/span>)/g, "$1ОХЛАЖДЕНИЕ")
