@@ -1650,10 +1650,17 @@
   function breezeGroup() {
     return '<g class="cg-breeze-flow" pointer-events="none">' +
       BREEZE_GROUP.map(function (b) {
+        // One loop must advance by a whole number of dash/gap periods.
+        // Otherwise the last animation frame cannot match the first and the
+        // pattern visibly jumps whenever the infinite CSS animation restarts.
+        var pieces = b.dash.split(" ").map(Number);
+        var period = pieces[0] + pieces[1];
+        var cycle = period * Math.max(1, Math.round(240 / period));
         return '<path d="' + breezeArc(b.r, b.amp, b.wave) +
           '" fill="none" stroke="#d4e8ed" stroke-width="' + b.width +
           '" stroke-linecap="round" stroke-dasharray="' + b.dash +
-          '" opacity="' + b.alpha + '" style="animation-duration:' + b.speed + 's"></path>';
+          '" opacity="' + b.alpha + '" style="animation-duration:' + b.speed +
+          's;--cg-breeze-cycle:-' + cycle + '"></path>';
       }).join('') + '</g>';
   }
 
@@ -7989,7 +7996,7 @@ ha-card[data-appearance^="glass"] .cg-inner{
 /* Breeze: four softly tinted, independently drifting wavy ribbons beyond the main dial.
    Temperature gradients themselves remain static and readable. */
 .cg-breeze-flow path{animation-name:cgBreezeDrift;animation-timing-function:linear;animation-iteration-count:infinite;}
-@keyframes cgBreezeDrift{to{stroke-dashoffset:-240;}}
+@keyframes cgBreezeDrift{from{stroke-dashoffset:0;}to{stroke-dashoffset:var(--cg-breeze-cycle);}}
 .cg-ac-fan{color:var(--ct-face-ink, #dfe8f4);animation:cgAcFanSpin 2.4s linear infinite;flex-shrink:0;}
 @keyframes cgAcFanSpin{to{transform:rotate(360deg);}}
 /* Zone card surfaces. Declared here so the glass variants below can retint them the
