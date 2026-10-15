@@ -1631,6 +1631,32 @@
     return ringLabelDraw(cold, '#8b95a2') + ringLabelDraw(warm, '#27d3ff');
   }
 
+  // Breeze-style outer airflow, adapted from the single-dial BREEZE ribbons.
+  // Each wavy ribbon keeps its own dash pattern and phase speed.
+  function breezeArc(r, amp, wave) {
+    var path = "";
+    for (var a = A0; a <= A0 + SPAN; a += 2) {
+      var p = P(r + amp * Math.sin(a * Math.PI * 2 / wave), a);
+      path += (a === A0 ? "M" : "L") + f(p[0]) + " " + f(p[1]);
+    }
+    return path;
+  }
+  var BREEZE_GROUP = [
+    { r: 118, amp: 1.3, wave: 24, dash: "13 9", width: 1.1, alpha: .48, speed: 13.7 },
+    { r: 122, amp: 1.8, wave: 36, dash: "18 14", width: 1.5, alpha: .69, speed: 11.4 },
+    { r: 125, amp: 1.0, wave: 18, dash: "10 7", width: 1.0, alpha: .42, speed: 8.9 },
+    { r: 129, amp: 1.5, wave: 20, dash: "8 6", width: 1.0, alpha: .32, speed: 16.5 }
+  ];
+  function breezeGroup() {
+    return '<g class="cg-breeze-flow" pointer-events="none">' +
+      BREEZE_GROUP.map(function (b) {
+        return '<path d="' + breezeArc(b.r, b.amp, b.wave) +
+          '" fill="none" stroke="#d4e8ed" stroke-width="' + b.width +
+          '" stroke-linecap="round" stroke-dasharray="' + b.dash +
+          '" opacity="' + b.alpha + '" style="animation-duration:' + b.speed + 's"></path>';
+      }).join('') + '</g>';
+  }
+
   function hero(s, d) {
     d = d || derive(s);
     var ta = angleOf(d.target, d.min, d.max), pa = angleOf(d.roomAvg, d.min, d.max);
@@ -1649,10 +1675,7 @@
         HW + '" stroke-linecap="round"></path>' +
       '<path d="' + arcPath(HR, ta, A0 + SPAN) + '" fill="none" stroke="url(#mWarm)" ' +
         'stroke-width="' + HW + '" stroke-linecap="round"></path>' +
-      (s.heatingActive ? '<g class="cg-heat-flow" pointer-events="none">' +
-        '<path d="' + arcPath(HR, A0, ta) + '" fill="none" stroke="#c9f5ff" stroke-width="2.8" stroke-linecap="round"></path>' +
-        '<path d="' + arcPath(HR, ta, A0 + SPAN) + '" fill="none" stroke="#ffe0af" stroke-width="2.8" stroke-linecap="round"></path>' +
-        '</g>' : '') +
+      (s.airflowActive ? breezeGroup() : '') +
       /* drag band: the hero sets the house target */
       '<path d="' + arcPath(HR, A0, A0 + SPAN) + '" fill="none" stroke="rgba(0,0,0,0)" ' +
         'stroke-width="34" stroke-linecap="round" data-act="house" ' +
@@ -1672,8 +1695,8 @@
         lo, hi, d.spread !== 0) +
       heroNeedle(ta) +
       heroPin(d.roomAvg, pa) +
-      '<text class="cg-target-lb" x="168" y="164" text-anchor="middle" font-size="13" ' +
-        'font-weight="600" letter-spacing="4" fill="#9aa5b1">TARGET</text>' +
+      '<text class="cg-target-lb" x="132" y="172" text-anchor="middle" font-size="11" ' +
+        'font-weight="600" letter-spacing="2" fill="#9aa5b1">TARGET</text>' +
       /* the digits stay on the gauge axis and the degree sits outside them, so adding
          the symbol does not push the number off centre */
       '<text x="168" y="213" text-anchor="middle" dominant-baseline="central" ' +
@@ -7963,9 +7986,10 @@ ha-card[data-appearance^="glass"] .cg-inner{
 /* The sheet's stylesheet speaks --ct-accent and --ct-font; this card publishes the
    same two things under its own names. Alias rather than fork the stylesheet. */
 .cg-card{ --ct-accent: var(--cg-accent, ${DEFAULT_ACCENT}); --ct-font: ${FONT_STACK}; }
-/* Animated highlights preserve the continuous blue/orange temperature bands. */
-.cg-heat-flow path{stroke-dasharray:5 19;animation:cgHeatFlow 2.8s linear infinite;opacity:.88;}
-@keyframes cgHeatFlow{to{stroke-dashoffset:-48;}}
+/* Breeze: four softly tinted, independently drifting wavy ribbons beyond the main dial.
+   Temperature gradients themselves remain static and readable. */
+.cg-breeze-flow path{animation-name:cgBreezeDrift;animation-timing-function:linear;animation-iteration-count:infinite;}
+@keyframes cgBreezeDrift{to{stroke-dashoffset:-240;}}
 .cg-ac-fan{color:var(--ct-face-ink, #dfe8f4);animation:cgAcFanSpin 2.4s linear infinite;flex-shrink:0;}
 @keyframes cgAcFanSpin{to{transform:rotate(360deg);}}
 /* Zone card surfaces. Declared here so the glass variants below can retint them the
@@ -7999,7 +8023,7 @@ ha-card[data-appearance="glass-light"] .cg-inner,
 ${FACE.KEYFRAMES}
 @media (prefers-reduced-motion: reduce){
   .cg-zonecard [style*='animation']{ animation:none !important; }
-  .cg-heat-flow path, .cg-ac-fan{ animation:none !important; }
+  .cg-breeze-flow path, .cg-ac-fan{ animation:none !important; }
 }
 /* The two spread-ring labels follow their own ring end, so near either end of the
    range they land on the band rather than beside it. Card-coloured knockout, the
@@ -8764,7 +8788,7 @@ ${FACE.KEYFRAMES}
       zones.forEach((z) => { z.acFanActive = acFanActive && z.id === acZone; });
       return {
         name: escapeText(this._config.name || "House"),
-        zones, heatingActive,
+        zones, heatingActive, airflowActive: heatingActive || acFanActive,
         target: (this._zui && this._zui.houseTarget != null) ? this._zui.houseTarget : null,
         min: r.lo, max: r.hi,
       };
